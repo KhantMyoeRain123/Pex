@@ -2,12 +2,13 @@ from collections import deque
 from regex_pof import shunting
 
 class TNFA:
-    def __init__(self,start_state,final_state,symbol,transitions,states) -> None:
+    def __init__(self,start_state,final_state,symbol,transitions,states,alphabet) -> None:
         self.start_state=start_state
         self.final_state=final_state
         self.symbol=symbol
         self.transitions=transitions
         self.states=states
+        self.alphabet=alphabet
 
     def __str__(self) -> str:
         out=""
@@ -22,12 +23,12 @@ class TNFAFactory:
     def __init__(self) -> None:
         self.state=0
     def symb_tnfa(self,symbol):
-        new_tnfa=TNFA(self.state,self.state+1,symbol,{(self.state,symbol):self.state+1},[self.state,self.state+1])
+        new_tnfa=TNFA(self.state,self.state+1,symbol,{(self.state,symbol):self.state+1},[self.state,self.state+1],[symbol])
         self.increment()
         return new_tnfa
 
     def alt_tnfa(self,tnfa1:TNFA,tnfa2:TNFA):
-        new_tnfa=TNFA(self.state,self.state+1,"",tnfa1.transitions|tnfa2.transitions,tnfa1.states+tnfa2.states+[self.state,self.state+1])
+        new_tnfa=TNFA(self.state,self.state+1,"",tnfa1.transitions|tnfa2.transitions,tnfa1.states+tnfa2.states+[self.state,self.state+1],tnfa1.alphabet+tnfa2.alphabet)
 
         new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa1.start_state
         new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa2.start_state
@@ -37,12 +38,12 @@ class TNFAFactory:
         return new_tnfa
 
     def concat_tnfa(self,tnfa1:TNFA,tnfa2:TNFA):
-        new_tnfa=TNFA(tnfa1.start_state,tnfa2.final_state,"",tnfa1.transitions|tnfa2.transitions,tnfa1.states+tnfa2.states)
+        new_tnfa=TNFA(tnfa1.start_state,tnfa2.final_state,"",tnfa1.transitions|tnfa2.transitions,tnfa1.states+tnfa2.states,tnfa1.alphabet+tnfa2.alphabet)
         new_tnfa.transitions[(tnfa1.final_state,"")]=tnfa2.start_state
         return new_tnfa
 
     def star_tnfa(self,tnfa:TNFA):
-        new_tnfa=TNFA(self.state,self.state+1,"",tnfa.transitions,tnfa.states+[self.state,self.state+1])
+        new_tnfa=TNFA(self.state,self.state+1,"",tnfa.transitions,tnfa.states+[self.state,self.state+1],tnfa.alphabet)
         new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa.start_state
         new_tnfa.transitions[(tnfa.final_state,"")]=new_tnfa.final_state
         new_tnfa.transitions[(tnfa.final_state,"")]=tnfa.start_state
@@ -50,7 +51,7 @@ class TNFAFactory:
         return new_tnfa
 
     def plus_tnfa(self,tnfa:TNFA):
-        new_tnfa=TNFA(self.state,self.state+1,"",tnfa.transitions,tnfa.states+[self.state,self.state+1])
+        new_tnfa=TNFA(self.state,self.state+1,"",tnfa.transitions,tnfa.states+[self.state,self.state+1],tnfa.alphabet)
         new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa.start_state
         new_tnfa.transitions[(tnfa.final_state,"")]=new_tnfa.final_state
         new_tnfa.transitions[(tnfa.final_state,"")]=tnfa.start_state
@@ -97,7 +98,8 @@ def thompson(out_q:deque):
 if __name__=="main":
     out_q=shunting("a(b|c)*")
     tnfa=thompson(out_q)
-    print(tnfa)
+    print(tnfa.transitions)
+
     
 
 
