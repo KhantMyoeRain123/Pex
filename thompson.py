@@ -92,6 +92,7 @@ def thompson(out_q:deque):
     return final_tnfa
 
 
+
 #test code for thompson
 if __name__=="main":
     out_q=shunting("a(b|c)*")
