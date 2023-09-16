@@ -1,6 +1,7 @@
 from collections import deque
 from thompson import TNFA,thompson
 
+
 #BFS
 def epsilon_closure(state,tnfa:TNFA):
     closure_list=[]
