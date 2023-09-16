@@ -7,7 +7,7 @@ def convert(in_s):
         new+=c
         if(i+1<len(in_s)):
             #need to discover more edge cases
-            if((c.isalpha() or c=="*" or c=="+") and (in_s[i+1].isalpha() or in_s[i+1]=="(")):
+            if((c.isalpha() or c=="*" or c=="+" or c==")") and (in_s[i+1].isalpha() or in_s[i+1]=="(")):
                 new+="?"
     return new
 

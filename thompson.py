@@ -13,70 +13,47 @@ class TNFA:
         out=""
         for t in self.transitions:
             if(t[1]!=""):
-                out+="S"+str(t[0])+"-"+t[1]+"-> S"+str(t[2])+"\n"
+                out+="S"+str(t[0])+"-"+t[1]+"-> S"+str(self.transitions[t])+"\n"
             else:
-                out+="S"+str(t[0])+"-ep-> S"+str(t[2])+"\n"
+                out+="S"+str(t[0])+"-ep-> S"+str(self.transitions[t])+"\n"
         return out
 #handles state numbering
 class TNFAFactory:
     def __init__(self) -> None:
         self.state=0
     def symb_tnfa(self,symbol):
-        new_tnfa=TNFA(self.state,self.state+1,symbol,[(self.state,symbol,self.state+1)],[self.state,self.state+1])
+        new_tnfa=TNFA(self.state,self.state+1,symbol,{(self.state,symbol):self.state+1},[self.state,self.state+1])
         self.increment()
         return new_tnfa
 
     def alt_tnfa(self,tnfa1:TNFA,tnfa2:TNFA):
-        new_tnfa=TNFA(self.state,self.state+1,"",tnfa1.transitions+tnfa2.transitions,tnfa1.states+tnfa2.states+[self.state,self.state+1])
-        new_tnfa.transitions.append(
-            (new_tnfa.start_state,"",tnfa1.start_state),
-        )
-        new_tnfa.transitions.append(
-            (new_tnfa.start_state,"",tnfa2.start_state),
-        )
-        new_tnfa.transitions.append(
-            (tnfa1.final_state,"",new_tnfa.final_state),
-        )
-        new_tnfa.transitions.append(
-            (tnfa2.final_state,"",new_tnfa.final_state)
-        )
+        new_tnfa=TNFA(self.state,self.state+1,"",tnfa1.transitions|tnfa2.transitions,tnfa1.states+tnfa2.states+[self.state,self.state+1])
+
+        new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa1.start_state
+        new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa2.start_state
+        new_tnfa.transitions[(tnfa1.final_state,"")]=new_tnfa.final_state
+        new_tnfa.transitions[(tnfa2.final_state,"")]=new_tnfa.final_state
         self.increment()
         return new_tnfa
 
     def concat_tnfa(self,tnfa1:TNFA,tnfa2:TNFA):
-        new_tnfa=TNFA(tnfa1.start_state,tnfa2.final_state,"",tnfa1.transitions+tnfa2.transitions,tnfa1.states+tnfa2.states)
-        new_tnfa.transitions.append(
-            (tnfa1.final_state,"",tnfa2.start_state)
-        )
+        new_tnfa=TNFA(tnfa1.start_state,tnfa2.final_state,"",tnfa1.transitions|tnfa2.transitions,tnfa1.states+tnfa2.states)
+        new_tnfa.transitions[(tnfa1.final_state,"")]=tnfa2.start_state
         return new_tnfa
 
     def star_tnfa(self,tnfa:TNFA):
         new_tnfa=TNFA(self.state,self.state+1,"",tnfa.transitions,tnfa.states+[self.state,self.state+1])
-        new_tnfa.transitions.append(
-            (new_tnfa.start_state,"",tnfa.start_state),
-        )
-        new_tnfa.transitions.append(
-            (tnfa.final_state,"",new_tnfa.final_state)
-        )
-        new_tnfa.transitions.append(
-            (new_tnfa.start_state,"",new_tnfa.final_state)
-        )
-        new_tnfa.transitions.append(
-            (tnfa.final_state,"",tnfa.start_state)
-        )
+        new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa.start_state
+        new_tnfa.transitions[(tnfa.final_state,"")]=new_tnfa.final_state
+        new_tnfa.transitions[(tnfa.final_state,"")]=tnfa.start_state
+        new_tnfa.transitions[(new_tnfa.start_state,"")]=new_tnfa.final_state
         return new_tnfa
 
     def plus_tnfa(self,tnfa:TNFA):
         new_tnfa=TNFA(self.state,self.state+1,"",tnfa.transitions,tnfa.states+[self.state,self.state+1])
-        new_tnfa.transitions.append(
-            (new_tnfa.start_state,"",tnfa.start_state)
-        )
-        new_tnfa.transitions.append(
-            (tnfa.final_state,"",new_tnfa.final_state)
-        )
-        new_tnfa.transitions.append(
-            (tnfa.final_state,"",tnfa.start_state)
-        )
+        new_tnfa.transitions[(new_tnfa.start_state,"")]=tnfa.start_state
+        new_tnfa.transitions[(tnfa.final_state,"")]=new_tnfa.final_state
+        new_tnfa.transitions[(tnfa.final_state,"")]=tnfa.start_state
         return new_tnfa
 
     def increment(self):
@@ -114,10 +91,12 @@ def thompson(out_q:deque):
     final_tnfa=tnfa_stack.pop()
     return final_tnfa
 
-
-out_q=shunting("a(b|c)*")
-tnfa=thompson(out_q)
-print(tnfa)
+#test code for thompson
+if __name__=="main":
+    out_q=shunting("a(b|c)*")
+    tnfa=thompson(out_q)
+    print(tnfa)
+    
 
 
 
