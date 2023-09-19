@@ -77,7 +77,6 @@ def shunting(in_s):
     while(len(op_stack)>0):
         out_q.append(op_stack.pop())
     
-    
 
     return out_q
 
